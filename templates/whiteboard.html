@@ -1,0 +1,14 @@
+<!doctype html>
+<title>{{ title.decode('utf-8') }}</title>
+<form action="/cut" method="post">
+    <span>word:</span>
+    <input type=text name=word style='width:32em' value={{ word.decode('utf-8') }}>
+    {% if mode and mode_names %}<input type=hidden name=mode value={{ mode.decode('utf-8') }}>{% endif %}
+    <input type=submit value=Submit>
+</form>
+<hr />
+<div name=content>
+{% block content %}
+{{ content.decode('utf-8')|safe }}{% if mod and mode_names %}【{{ mode_names[mode].decode('utf-8') }}】{% endif %}
+{% endblock %}
+</div>
