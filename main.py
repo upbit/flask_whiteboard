@@ -18,6 +18,12 @@ CUT_MOD_NAMES = {
     '': '分词测试',
 }
 
+def add_red(document, key_words):
+    result = document
+    for word in [ word.encode('utf-8') for word in key_words ]:
+        result = result.replace(word, "<span class=red>%s</span>" % word)
+    return result
+
 @app.route('/')
 def index():
     return redirect(url_for('cut_words'))
@@ -42,8 +48,8 @@ def cut_words(word=None, mode=None):
             segments = jieba.cut(word, cut_all=True)
         else:
             segments = jieba.cut(word)
-        content = ", ".join(segments).encode('utf-8')
-        content += "<br/><br/>关键词: " + " ".join(analyse.extract_tags(word, topK=3)).encode('utf-8')
+        content  = "输入句子: " + add_red(word, analyse.extract_tags(word, topK=2)) + "<br/>"
+        content += "分词结果: " + ", ".join(segments).encode('utf-8')
     else:
         # 没有输入要分词的内容
         word = ''
