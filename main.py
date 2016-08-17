@@ -20,7 +20,7 @@ CUT_MOD_NAMES = {
 
 @app.route('/')
 def index():
-    return redirect(url_for('cut'))
+    return redirect(url_for('cut_words'))
 
 @app.route('/cut', methods=['GET', 'POST'])
 @app.route('/cut/<word>')
