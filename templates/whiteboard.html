@@ -15,7 +15,7 @@
 <hr />
 <div id=content>
 {% block content %}
-{{ content.decode('utf-8')|safe }}{% if mod and mode_names %}【{{ mode_names[mode].decode('utf-8') }}】{% endif %}
+{{ content.decode('utf-8')|safe }}{% if mode and mode_names %}<span class=tips>【{{ mode_names[mode].decode('utf-8') }}】</span>{% endif %}
 {% endblock %}
 </div>
 </body>

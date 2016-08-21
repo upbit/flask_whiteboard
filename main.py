@@ -8,14 +8,19 @@ import jieba.analyse as analyse
 import jieba.posseg as pseg
 jieba.initialize()
 
+import mmseg
+import mmseg.search
+
 app = Flask(__name__)
 
-EXAMPLE_WORDS = '刘德华演过的经典电影'
+EXAMPLE_WORDS = '研究生在研究院研究生命科学'
 CUT_MOD_NAMES = {
     's': '搜索引擎模式',
     'f': '全模式',
     'd': '精确模式',
     '': '分词测试',
+    'mm': 'mmseg',
+    'mms': 'mmseg-search',
 }
 
 def add_red(document, key_words):
@@ -40,21 +45,39 @@ def cut_words(word=None, mode=None):
     if word:
         word = word.encode('utf-8')
         if not mode in CUT_MOD_NAMES.keys():
-            mode = 's'
+            mode = 'mms'    # 默认值
         # 调用jieba切词
         if mode == 's':
             segments = jieba.cut_for_search(word)
         elif mode == 'f':
             segments = jieba.cut(word, cut_all=True)
-        else:
+        elif mode == 'd':
             segments = jieba.cut(word)
-        content  = "输入句子: " + add_red(word, analyse.extract_tags(word, topK=2)) + "<br/>"
-        content += "分词结果: " + ", ".join(segments).encode('utf-8')
+        elif mode == 'mm':
+            segments = mmseg.seg_txt(word)
+        elif mode == 'mms':
+            segments = mmseg.search.seg_txt_search(word)
+        else:
+            raise Exception("Unknown mode(%s)" % mode)
+        result = ", ".join(segments)
+        try:
+            # try encode to utf-8 if ascii
+            result = result.encode('utf-8')
+        except:
+            pass
+
+        content = result
+        if mode in ['d','f','s']:
+            content += "<br/>" + "关键词: " + add_red(word, analyse.extract_tags(word, topK=2))
     else:
         # 没有输入要分词的内容
         word = ''
         mode = ''
-        content = '请在地址栏后或输入框中，输入要分词的内容<br/>例如: <a href="%s">%s</a><br/><br/>支持的模式: <b>/d</b> 精确模式; <b>/a</b> 全模式; <b>/s</b> 搜索引擎模式' % (url_for('cut_words', word=EXAMPLE_WORDS, mode='s').encode('utf8'), '/cut/'+EXAMPLE_WORDS)
+        content  = '请在地址栏后或输入框中，输入要分词的内容<br/>例如: <a href="%s">%s</a><br/><br/>' % (url_for('cut_words', word=EXAMPLE_WORDS).encode('utf8'), '/cut/'+EXAMPLE_WORDS)
+        content += '支持的模式: <br>' \
+                   '&nbsp; jieba: <span class=tips>/d</span> 精确模式; <span class=tips>/a</span> 全模式; <span class=tips>/s</span> 搜索引擎模式<br>' \
+                   '&nbsp; mmseg: <span class=tips>/mm</span> mmseg模式; <span class=tips>/mms</span> mmseg.search模式'
+                
     return render_template('whiteboard.html', word=word, mode=mode, mode_names=CUT_MOD_NAMES, content=content, title='Jieba切词测试')
 
 @app.route('/pseg', methods=['GET', 'POST'])
